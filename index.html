@@ -46,7 +46,7 @@ h2{font-size:14px;margin:18px 0 8px}
 <body>
 <div class="wrap">
 <h1>คำนวณค่าออกแบบเบื้องต้น</h1>
-<p class="sub">เลื่อนหรือพิมพ์ค่าช่องไหนก็ได้ ช่องอื่นจะปรับตามกันทันที</p>
+<p class="sub">เลื่อนสไลเดอร์หรือพิมพ์ค่าช่องไหนก็ได้ ช่องอื่นจะปรับตามกันทันที</p>
 <div class="grid">
   <div class="panel" id="ctls"></div>
   <div class="panel">
@@ -56,9 +56,9 @@ h2{font-size:14px;margin:18px 0 8px}
       <div class="cap" id="hSub"></div>
     </div>
     <div class="flow">
-      <div class="n"><b id="fB"></b><span>งบก่อสร้าง</span></div><i>÷ ราคากลาง</i>
-      <div class="n"><b id="fA"></b><span>ตร.ม.</span></div><i>× ค่าแบบ/ตร.ม.</i>
-      <div class="n"><b id="fF"></b><span>ค่าแบบ</span></div>
+      <div class="n"><b id="fA"></b><span>พื้นที่ออกแบบ (ตร.ม.)</span></div><i id="fX"></i>
+      <div class="n"><b id="fT"></b><span>พื้นที่ก่อสร้างจริง (ตร.ม.)</span></div><i id="fC"></i>
+      <div class="n"><b id="fB"></b><span>งบก่อสร้างจริง (บาท)</span></div>
     </div>
     <h2>ราคาค่าออกแบบต่อ ตร.ม.</h2>
     <div class="row"><span>มาตรฐาน</span><div class="track"><div class="fill" id="bS" style="background:var(--bar);filter:brightness(.8)"></div></div><em id="vS"></em></div>
@@ -66,34 +66,41 @@ h2{font-size:14px;margin:18px 0 8px}
     <div class="row"><span>ส่วนลด</span><div class="track"><div class="fill" id="bD" style="background:var(--acc2)"></div></div><em id="vD"></em></div>
     <h2>สัดส่วนค่าแบบเทียบงบก่อสร้าง</h2>
     <div class="row"><span>ค่าแบบ</span><div class="track"><div class="fill" id="bR" style="background:var(--acc)"></div></div><em id="vR"></em></div>
-    <h2>ขนาดพื้นที่ใช้สอย</h2>
+    <h2>พื้นที่ออกแบบ เทียบพื้นที่ก่อสร้างจริง</h2>
     <div class="plan"><svg id="plan" width="120" height="120" viewBox="0 0 120 120" aria-hidden="true"></svg>
       <div><div style="font-size:20px;font-weight:700" id="pA"></div><span class="tag" id="pS"></span></div></div>
-    <div class="note">ตัวอย่างเริ่มต้น: งบ 10 ล้านบาท ÷ 25,000 บาท/ตร.ม. = 400 ตร.ม. ค่าแบบมาตรฐาน 5% = 1,250 บาท/ตร.ม. ลดเหลือ 1,100 บาท/ตร.ม.</div>
+    <div class="note">ตัวอย่างเริ่มต้น: ค่าแบบคิดจากพื้นที่ใช้สอยภายใน 400 ตร.ม. เท่านั้น (400 × 25,000 = 10 ล้านบาท × 5% = 1,250 บาท/ตร.ม. ลดเหลือ 1,100) ส่วนงบก่อสร้างจริงบวกเผื่อ 30% (ทางเดิน ระเบียง โรงจอดรถ) = 520 ตร.ม. × 25,000 = 13 ล้านบาท</div>
   </div>
 </div>
 </div>
 <script>
-var s={B:10000000,C:25000,r:0.05,P:1100,A:400};
+var s={A:400,x:0.3,C:25000,r:0.05,P:1100};
 var defs=[
- {k:"B",l:"งบประมาณก่อสร้าง",u:"บาท",min:1000000,max:100000000,step:100000},
- {k:"C",l:"ราคากลางก่อสร้าง",u:"บาท/ตร.ม.",min:10000,max:80000,step:500},
- {k:"A",l:"พื้นที่ออกแบบ",u:"ตร.ม.",min:50,max:4000,step:5},
- {k:"R",l:"อัตราค่าออกแบบมาตรฐาน",u:"% ของค่าก่อสร้าง",min:1,max:10,step:0.1},
- {k:"P",l:"ค่าแบบที่เสนอ",u:"บาท/ตร.ม.",min:200,max:5000,step:10},
- {k:"D",l:"ส่วนลดให้ลูกค้า",u:"%",min:0,max:60,step:0.5},
+ {k:"A",l:"พื้นที่ออกแบบ (ใช้คิดค่าแบบ)",u:"ตร.ม.",min:50,max:3000,step:10},
+ {k:"X",l:"เผื่อทางเดิน ระเบียง โรงจอดรถ",u:"%",min:0,max:100,step:5},
+ {k:"T",l:"พื้นที่ก่อสร้างจริง",u:"ตร.ม.",min:50,max:5000,step:10},
+ {k:"C",l:"ราคากลางก่อสร้าง",u:"บาท/ตร.ม.",min:10000,max:80000,step:1000},
+ {k:"B",l:"งบประมาณก่อสร้าง",u:"บาท",min:1000000,max:150000000,step:500000},
+ {k:"R",l:"อัตราค่าออกแบบมาตรฐาน",u:"% ของค่าก่อสร้างพื้นที่ออกแบบ",min:1,max:10,step:0.5},
+ {k:"P",l:"ค่าแบบที่เสนอ",u:"บาท/ตร.ม.",min:200,max:5000,step:50},
+ {k:"D",l:"ส่วนลดให้ลูกค้า",u:"%",min:0,max:60,step:5},
  {k:"F",l:"ค่าแบบรวม",u:"บาท",min:0,max:10000000,step:10000}
 ];
 var fmt=function(n,d){return Number(n).toLocaleString("en-US",{maximumFractionDigits:d||0})};
+function T(){return s.A*(1+s.x)}
+function B(){return T()*s.C}
 function S(){return s.C*s.r}
 function get(k){
- if(k=="R")return s.r*100; if(k=="D")return S()>0?(1-s.P/S())*100:0; if(k=="F")return s.P*s.A; return s[k];
+ if(k=="R")return s.r*100; if(k=="X")return s.x*100; if(k=="T")return T(); if(k=="B")return B();
+ if(k=="D")return S()>0?(1-s.P/S())*100:0; if(k=="F")return s.P*s.A; return s[k];
 }
 function set(k,v){
  if(isNaN(v))return;
- if(k=="B"){s.B=Math.max(v,0);s.A=s.B/s.C}
- else if(k=="C"){s.C=Math.max(v,1);s.A=s.B/s.C}
- else if(k=="A"){s.A=Math.max(v,1);s.B=s.A*s.C}
+ if(k=="A"){s.A=Math.max(v,1)}
+ else if(k=="X"){s.x=Math.max(v,0)/100}
+ else if(k=="T"){s.A=Math.max(v,1)/(1+s.x)}
+ else if(k=="C"){var b0=B();s.C=Math.max(v,1);s.A=b0/(s.C*(1+s.x))}
+ else if(k=="B"){s.A=Math.max(v,1)/(s.C*(1+s.x))}
  else if(k=="R"){s.r=Math.max(v,0)/100}
  else if(k=="P"){s.P=Math.max(v,0)}
  else if(k=="D"){s.P=S()*(1-v/100)}
@@ -114,25 +121,26 @@ function $(i){return document.getElementById(i)}
 function render(src){
  defs.forEach(function(d){
   var v=get(d.k),e=els[d.k];
-  var dec=(d.k=="R"||d.k=="D"||d.k=="A")?1:0;
-  e.r.value=v;
+  var dec=(d.k=="R"||d.k=="D"||d.k=="X"||d.k=="A"||d.k=="T")?1:0;
+  if(src!=d.k)e.r.value=v;
   if(src!=d.k||document.activeElement!==e.n){e.n.value=+v.toFixed(dec)}
  });
- var F=s.P*s.A,St=S(),disc=St-s.P;
+ var F=s.P*s.A,St=S(),disc=St-s.P,t=T(),b=B();
  $("hF").textContent=fmt(F)+" บาท";
- $("hSub").textContent="= "+fmt(s.P)+" บาท/ตร.ม. × "+fmt(s.A,1)+" ตร.ม.";
- $("fB").textContent=fmt(s.B);$("fA").textContent=fmt(s.A,1);$("fF").textContent=fmt(F);
+ $("hSub").textContent="= "+fmt(s.P)+" บาท/ตร.ม. × "+fmt(s.A,1)+" ตร.ม. (พื้นที่ออกแบบ)";
+ $("fA").textContent=fmt(s.A,1);$("fT").textContent=fmt(t,1);$("fB").textContent=fmt(b);
+ $("fX").textContent="+ "+fmt(s.x*100,1)+"%";$("fC").textContent="× "+fmt(s.C);
  var mx=Math.max(St,s.P,1);
  $("bS").style.width=St/mx*100+"%";$("bP").style.width=s.P/mx*100+"%";$("bD").style.width=Math.max(disc,0)/mx*100+"%";
  $("vS").textContent=fmt(St);$("vP").textContent=fmt(s.P);
  $("vD").textContent=(disc>=0?"-":"+")+fmt(Math.abs(disc))+" ("+fmt(Math.abs(get("D")),1)+"%)";
- var share=s.B>0?F/(s.A*s.C):0;
+ var share=b>0?F/b:0;
  $("bR").style.width=Math.min(share/0.1,1)*100+"%";
  $("vR").textContent=fmt(share*100,2)+"%";
- var side=Math.sqrt(s.A),sz=Math.max(24,Math.min(110,side*5)),o=(120-sz)/2;
- $("plan").innerHTML='<rect x="'+o+'" y="'+o+'" width="'+sz+'" height="'+sz+'" fill="var(--bar)" stroke="var(--acc)" stroke-width="2"/><line x1="'+o+'" y1="116" x2="'+(o+sz)+'" y2="116" stroke="var(--mute)"/><line x1="4" y1="'+o+'" x2="4" y2="'+(o+sz)+'" stroke="var(--mute)"/>';
- $("pA").textContent=fmt(s.A,1)+" ตร.ม.";
- $("pS").textContent="ประมาณ "+fmt(side,1)+" × "+fmt(side,1)+" ม. ถ้าเป็นชั้นเดียว";
+ var so=Math.max(30,Math.min(110,Math.sqrt(t)*5)),si=so*Math.sqrt(s.A/t),oo=(120-so)/2,oi=(120-si)/2;
+ $("plan").innerHTML='<rect x="'+oo+'" y="'+oo+'" width="'+so+'" height="'+so+'" fill="none" stroke="var(--acc2)" stroke-width="2" stroke-dasharray="5 3"/><rect x="'+oi+'" y="'+oi+'" width="'+si+'" height="'+si+'" fill="var(--bar)" stroke="var(--acc)" stroke-width="2"/>';
+ $("pA").textContent=fmt(t,1)+" ตร.ม.";
+ $("pS").textContent="ออกแบบ "+fmt(s.A,1)+" + เผื่อ "+fmt(t-s.A,1)+" ตร.ม.";
 }
 render();
 </script>
